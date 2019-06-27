@@ -57,6 +57,14 @@ const fetchEvent = async (req, res, next) => {
     next();
 }
 
+const registerUserToEvent = async (req, res, next) => {
+    const promises = []
+    // const registeredUserToEventsPromise = registerUserToEvent();
+    // const addRegisteredEventToUserPromise = addRegisteredEventToUser(); 
+    req.data = await Promise.all(promises)
+    next();
+}
+
 const fetchMessages = async (req, res, next) => {
     req.data = await fetchSnapshot(req, db.ref('/newsFeed'));
     next();
@@ -66,5 +74,6 @@ module.exports = {
     fetchEvent,
     fetchEvents,
     fetchUserEvents,
+    registerUserToEvent,
     fetchMessages
 }

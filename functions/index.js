@@ -14,6 +14,8 @@ app.get('/user-past-events/:userId', (req, res, next)=> assignEventType(req, nex
 app.get('/saved-events/:userId', (req, res, next)=> assignEventType(req, next, 'savedEvents'), 
     userRoutes.fetchUserEvents, resHandler);
 
+app.get('/event-register/:userId/:eventId', userRoutes.registerUserToEvent, resHandler);
+
 app.get('/messages/', userRoutes.fetchMessages, resHandler);
 app.get('/messages/:first/:last', userRoutes.fetchMessages, resHandler);
 
