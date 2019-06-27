@@ -7,9 +7,12 @@ const { resHandler, assignEventType } = require('./middlewares/app-middlewares')
 app.get('/events/', userRoutes.fetchEvents, resHandler);
 app.get('/events/:first/:last', userRoutes.fetchEvents, resHandler);
 app.get('/event/:eventId', userRoutes.fetchEvent, resHandler);
-app.get('/registeredEvents/:userId', (req, res, next)=> assignEventType(req, next, 'registeredEvents'), userRoutes.fetchUserEvents, resHandler);
-app.get('/userPastEvents/:userId', (req, res, next)=> assignEventType(req, next, 'pastEvents'), userRoutes.fetchUserEvents, resHandler);
-app.get('/savedEvents/:userId', (req, res, next)=> assignEventType(req, next, 'savedEvents'), userRoutes.fetchUserEvents, resHandler);
+app.get('/user-registered-events/:userId', (req, res, next)=> assignEventType(req, next, 'registeredEvents'), 
+    userRoutes.fetchUserEvents, resHandler);
+app.get('/user-past-events/:userId', (req, res, next)=> assignEventType(req, next, 'pastEvents'), 
+    userRoutes.fetchUserEvents, resHandler);
+app.get('/saved-events/:userId', (req, res, next)=> assignEventType(req, next, 'savedEvents'), 
+    userRoutes.fetchUserEvents, resHandler);
 
 app.get('/messages/', userRoutes.fetchMessages, resHandler);
 app.get('/messages/:first/:last', userRoutes.fetchMessages, resHandler);
