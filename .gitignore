@@ -63,3 +63,5 @@ node_modules/
 
 # dotenv environment variables file
 .env
+
+./functions/admin-interface-dev-33d2e3b70572.json
