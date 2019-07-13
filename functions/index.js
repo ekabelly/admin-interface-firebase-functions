@@ -1,22 +1,33 @@
 const app = require('express')();
+const cors = require('cors');
 // The Cloud Functions for Firebase SDK to create Cloud Functions and setup triggers.
 const functions = require('firebase-functions');
 const userRoutes = require('./routes/users-routes');
 const { resHandler, assignEventType } = require('./middlewares/app-middlewares');
 
+app.use(cors());
+
+// Function URL (api): https://us-central1-admin-interface-dev.cloudfunctions.net/api
+
 app.get('/events/', userRoutes.fetchEvents, resHandler);
+
 app.get('/events/:first/:last', userRoutes.fetchEvents, resHandler);
+
 app.get('/event/:eventId', userRoutes.fetchEvent, resHandler);
+
 app.get('/user-registered-events/:userId', (req, res, next)=> assignEventType(req, next, 'registeredEvents'), 
     userRoutes.fetchUserEvents, resHandler);
+
 app.get('/user-past-events/:userId', (req, res, next)=> assignEventType(req, next, 'pastEvents'), 
     userRoutes.fetchUserEvents, resHandler);
+
 app.get('/saved-events/:userId', (req, res, next)=> assignEventType(req, next, 'savedEvents'), 
     userRoutes.fetchUserEvents, resHandler);
 
 app.get('/event-register/:userId/:eventId', userRoutes.registerUserToEvent, resHandler);
 
 app.get('/messages/', userRoutes.fetchMessages, resHandler);
+
 app.get('/messages/:first/:last', userRoutes.fetchMessages, resHandler);
 
 
