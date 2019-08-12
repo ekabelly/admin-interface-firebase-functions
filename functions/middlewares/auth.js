@@ -1,9 +1,16 @@
 const admin = require('firebase-admin');
+const usersWrap = require('../wrappers/users-wrap');
+
+const isUserEmailAdmin = async (req, userEmail) => {
+    const adminsEmailsArr = await usersWrap.fecthAdmins(req);
+    return adminsEmailsArr.includes(userEmail)
+}
 
 const adminLogin = async (req, res, next) => {
     const userRecord = await admin.auth().getUserByEmail(req.body.email);
-    if(userRecord && userRecord.email && userRecord.uid === req.body.uid){
-        console.log('Successfully fetched admin data:', userRecord.toJSON());
+    const isUserAdmin = await isUserEmailAdmin(req, req.body.email);
+    if(userRecord && userRecord.email && userRecord.uid === req.body.uid && isUserAdmin){
+        // console.log('Successfully fetched admin data:', userRecord.toJSON());
         // return next();
         const token = await admin.auth().createCustomToken(userRecord.uid);
         return res.send({ success: true, token });

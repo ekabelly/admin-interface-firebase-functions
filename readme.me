@@ -1,0 +1,14 @@
+firebase functions debug guide:
+https://medium.com/@mwebler/debugging-firebase-functions-with-vs-code-3afab528bb36
+
+npm install -g @google-cloud/functions-emulator
+
+cd functions
+
+functions start
+
+functions deploy (functions name here - api) --trigger-http
+
+functions inspect (functions name here - api)
+
+attach debugger
