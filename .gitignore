@@ -66,3 +66,4 @@ node_modules/
 
 ./functions/config/admin-interface-dev-33d2e3b70572.json
 ./functions/config/service-account.json
+functions/config/service-account.json
