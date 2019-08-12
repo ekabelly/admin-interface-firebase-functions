@@ -8,7 +8,7 @@ const { resHandler, assignEventType } = require('../middlewares/app-middlewares'
 
 Router.get('/', eventsWrap.fetchEvents, resHandler);
 
-Router.get('/:first/:last', eventsWrap.fetchEvents, resHandler);
+Router.get('paging/:first/:last', eventsWrap.fetchEvents, resHandler);
 
 Router.get('/event/:eventId', eventsWrap.fetchEvent, resHandler);
 
