@@ -100,9 +100,68 @@ const registerUserToEvent = async (req, res, next) => {
     next();
 }
 
+const removeUserIdFromEvent = async (userId, eventId, req) => {
+    const event = await fetchSnapshot(req, db.ref(`/events/${eventId}`));
+    if(event.assignedVolunteers){
+        const index = event.assignedVolunteers.indexOf(userId);
+        if(index > -1){
+            event.assignedVolunteers.splice(index, 1);
+            return new Promise(resolve => db.ref(`/events/${eventId}/assignedVolunteers`)
+                .set(event.assignedVolunteers).then(()=> resolve(true)).catch( err => {
+                    req.err = err;
+                    resolve(false);
+                }));
+        }
+        req.err = {
+            message: 'user not registered to that event.',
+            code: errCodes.UNKNOWN_ERROR
+        }
+        return false;
+    }
+}
+
+const removeEventIdFromUser = async (userId, eventId, req) => {
+    const user = await fetchSnapshot(req, db.ref(`/users/${userId}`));
+    if(user.registeredEvents){
+        const index = user.registeredEvents.indexOf(eventId);
+        if(index > -1){
+            user.registeredEvents.splice(index, 1);
+            return new Promise(resolve => db.ref(`/users/${userId}/registeredEvents`)
+                .set(user.registeredEvents).then(()=> resolve(true)).catch( err => {
+                    req.err = err;
+                    resolve(false);
+                }));
+        }
+        req.err = {
+            message: 'user not registered to that event.',
+            code: errCodes.UNKNOWN_ERROR
+        }
+        return false;
+    }
+
+}
+
+const unregisterUserFromEvent = async (req, res, next) => {
+    const didRemoveUserFromEvent = await removeUserIdFromEvent(req.params.userId, req.params.eventId, req);
+    let didRmoveEventFromUser = false;
+    if(didRemoveUserFromEvent){
+        didRmoveEventFromUser = await removeEventIdFromUser(req.params.userId, req.params.eventId, req); 
+    } else {
+        req.err = {
+            message: 'somthing went wrong.',
+            code: errCodes.UNKNOWN_ERROR
+        }
+    }
+    req.data = { didRemoveUserFromEvent, didRmoveEventFromUser };
+    next();
+}
+
+
+
 module.exports = {
     fetchEvent,
     fetchEvents,
     fetchUserEvents,
-    registerUserToEvent
+    registerUserToEvent,
+    unregisterUserFromEvent
 }

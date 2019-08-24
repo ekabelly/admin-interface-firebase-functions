@@ -23,8 +23,6 @@ Router.get('/saved-events/:userId', (req, res, next)=> assignEventType(req, next
 
 Router.get('/event-register/:userId/:eventId', eventsWrap.registerUserToEvent, resHandler);
 
-// Router.get('/messages/', userRoutes.fetchMessages, resHandler);
-
-// Router.get('/messages/:first/:last', userRoutes.fetchMessages, resHandler);
+Router.get('/event-unregister/:userId/:eventId', eventsWrap.unregisterUserFromEvent, resHandler);
 
 module.exports = Router;
