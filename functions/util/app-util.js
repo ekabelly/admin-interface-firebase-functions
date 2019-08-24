@@ -1,3 +1,5 @@
+const errCodes = require('../config/error-codes');
+
 // this is a generic function, with will receive dbRef (for example, admin.database().ref('/events/1'))
 // and return type Any. also, must be given (express) req.
 const fetchSnapshot = async (req, dbRef) => {
@@ -14,7 +16,10 @@ const fetchSnapshot = async (req, dbRef) => {
         return snapshot.val();
     }
     if(!snapshot){
-        req.err = errors.INVALID_PARAMS;
+        req.err = {
+            message: 'first and last must be valid numbers.',
+            code: errCodes.INVALID_PARAMS
+        };
     }
 }
 

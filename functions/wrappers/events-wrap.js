@@ -1,4 +1,5 @@
 const admin = require('firebase-admin');
+const errCodes = require('../config/error-codes');
 const { fetchSnapshot } = require('../util/app-util');
 const db = admin.database();
 
@@ -33,18 +34,71 @@ const fetchEvent = async (req, res, next) => {
     next();
 }
 
-const registerUserToEvent = async (req, res, next) => {
-    const promises = []
-    // const registeredUserToEventsPromise = registerUserToEvent();
-    // const addRegisteredEventToUserPromise = addRegisteredEventToUser(); 
-    req.data = await Promise.all(promises)
-    next();
+const registerUserToEventConditions = (userId, event, req) => {
+    if(event.assignedVolunteers.includes(userId)) {
+        req.err = {
+            code: errCodes.ALREADY_REGISTERED,
+            message: `volunteer already registered to event.`
+        };
+        return false;
+    }
+    if(event.assignedVolunteers.length >= event.volunteers.max){
+        req.err = {
+            code: errCodes.EVENT_FULL,
+            message: `event already full. can't register to a full events. user may register to waiting list.`
+        };
+        return false;
+    }
+    return true;
 }
 
-// const fetchMessages = async (req, res, next) => {
-//     req.data = await fetchSnapshot(req, db.ref('/newsFeed'));
-//     next();
-// }
+const addUserIdToEvent = async (userId, eventId, req) => {
+    const event = await fetchSnapshot(req, db.ref(`/events/${eventId}`));
+    if(event.assignedVolunteers){
+        const isAllowed = registerUserToEventConditions(userId, event, req);
+        if(!isAllowed){
+            return false;
+        }
+        event.assignedVolunteers.push(userId);
+    } else {
+        event.assignedVolunteers = [];
+        event.assignedVolunteers.push(userId);
+    }
+    return new Promise(resolve => db.ref(`/events/${eventId}/assignedVolunteers`)
+    .set(event.assignedVolunteers).then(() => resolve(true)).catch(err => {
+            req.err = err;
+            resolve(false);
+        }));
+}
+
+const addEventIdToUser = async (userId, eventId, req) => {
+    const user = await fetchSnapshot(req, db.ref(`/users/${userId}`));
+    if(user.registeredEvents){
+        if(!user.registeredEvents.includes(eventId)){
+            user.registeredEvents.push(eventId);
+        } else {
+            return false;
+        }
+    } else {
+        user.registeredEvents = [];
+        user.registeredEvents.push(eventId);
+    }
+    return new Promise(resolve => db.ref(`/users/${userId}/registeredEvents`)
+        .set(user.registeredEvents).then(()=> resolve(true)).catch( err => {
+            req.err = err;
+            resolve(false);
+        }));
+}
+
+const registerUserToEvent = async (req, res, next) => {
+    const didRegisterUserToEvent = await addUserIdToEvent(req.params.userId, req.params.eventId, req);
+    let didAddEventToUser = false;
+    if(didRegisterUserToEvent){
+        didAddEventToUser = await addEventIdToUser(req.params.userId, req.params.eventId, req); 
+    }
+    req.data = { didRegisterUserToEvent, didAddEventToUser };
+    next();
+}
 
 module.exports = {
     fetchEvent,
