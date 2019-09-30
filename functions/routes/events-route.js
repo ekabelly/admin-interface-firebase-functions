@@ -10,6 +10,10 @@ Router.get('/', eventsWrap.fetchEvents, resHandler);
 
 Router.get('paging/:first/:last', eventsWrap.fetchEvents, resHandler);
 
+Router.post('/create', eventsWrap.createEvent, resHandler);
+
+Router.put('/update/:eventId', eventsWrap.updateEvent, resHandler);
+
 Router.get('/event/:eventId', eventsWrap.fetchEvent, resHandler);
 
 Router.get('/user-registered-events/:userId', (req, res, next)=> assignEventType(req, next, 'registeredEvents'), 
