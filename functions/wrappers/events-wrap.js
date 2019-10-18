@@ -3,6 +3,18 @@ const errCodes = require('../config/error-codes');
 const { fetchSnapshot } = require('../util/app-util');
 const db = admin.database();
 
+const assignEntityToReq = async (req, entityName, id) => {
+    const entity = await fetchSnapshot(req, db.ref(`/${entityName}s/${id}`));
+    if(!entity){
+        req.err = {
+            code: errCodes.INVALID_PARAMS,
+            message: `${entityName} not found.`
+        };
+        return false;
+    }
+    req[entityName] = entity;
+}
+
 const fetchEventsByIdArr = async (req, eventsIdArr) => {
     const promisesArr = [];
     // console.log(eventsIdArr);
@@ -34,69 +46,84 @@ const fetchEvent = async (req, res, next) => {
     next();
 }
 
-const registerUserToEventConditions = (userId, event, req) => {
-    if(event.assignedVolunteers.includes(userId)) {
+const registerUserToEventConditions = (userId, req) => {
+    if(req.event.assignedVolunteers[userId]) {
         req.err = {
             code: errCodes.ALREADY_REGISTERED,
             message: `volunteer already registered to event.`
         };
         return false;
     }
-    if(event.assignedVolunteers.length >= event.volunteers.max){
+    if(Object.keys(req.event.assignedVolunteers).length >= req.event.volunteers.max){
         req.err = {
             code: errCodes.EVENT_FULL,
             message: `event already full. can't register to a full events. user may register to waiting list.`
         };
-        return false;
+        // on this case, user is allowed to register to backup list
     }
     return true;
 }
 
 const addUserIdToEvent = async (userId, eventId, req) => {
-    const event = await fetchSnapshot(req, db.ref(`/events/${eventId}`));
-    if(event.assignedVolunteers){
-        const isAllowed = registerUserToEventConditions(userId, event, req);
-        if(!isAllowed){
-            return false;
-        }
-        event.assignedVolunteers.push(userId);
-    } else {
-        event.assignedVolunteers = [];
-        event.assignedVolunteers.push(userId);
+    let volunteersCollection = 'assignedVolunteers';
+    if(!req.event.assignedVolunteers){
+        req.event.assignedVolunteers = {};
     }
-    return new Promise(resolve => db.ref(`/events/${eventId}/assignedVolunteers`)
-    .set(event.assignedVolunteers).then(() => resolve(true)).catch(err => {
+    if(!req.event.backupVolunteers){
+        req.event.backupVolunteers = {};
+    }
+    const isAllowed = registerUserToEventConditions(userId, req);
+    if(!isAllowed){
+        return false;
+    } else if (req.err && req.err.code === errCodes.EVENT_FULL){
+        volunteersCollection = 'backupVolunteers';
+        req.didRegisterAsBackup = true;
+        req.event.backupVolunteers[userId] = userId;
+    } else {
+        req.event.assignedVolunteers[userId] = userId;
+    }
+    return new Promise(resolve => db.ref(`/events/${eventId}/${volunteersCollection}`)
+    .set(req.event[volunteersCollection]).then(() => resolve(true)).catch(err => {
             req.err = err;
             resolve(false);
         }));
 }
 
 const addEventIdToUser = async (userId, eventId, req) => {
-    const user = await fetchSnapshot(req, db.ref(`/users/${userId}`));
-    if(user.registeredEvents){
-        if(!user.registeredEvents.includes(eventId)){
-            user.registeredEvents.push(eventId);
-        } else {
-            return false;
-        }
-    } else {
-        user.registeredEvents = [];
-        user.registeredEvents.push(eventId);
+    let eventType = 'registeredEvents';
+    if(!req.user.registeredEvents){
+        req.user.registeredEvents = {};
     }
-    return new Promise(resolve => db.ref(`/users/${userId}/registeredEvents`)
-        .set(user.registeredEvents).then(()=> resolve(true)).catch( err => {
+    if(!req.user.backupEvents){
+        req.user.backupEvents = {};
+    }
+    if(req.err && req.err.code === errCodes.EVENT_FULL){
+        eventType = 'backupEvents';
+        req.didRegisterAsBackup = true;
+    }
+    if(req.user[eventType][eventId]){
+        return false;
+    }
+    req.user[eventType][eventId] = eventId;
+    return new Promise(resolve => db.ref(`/users/${userId}/${eventType}`)
+        .set(req.user[eventType]).then(()=> resolve(true)).catch( err => {
             req.err = err;
             resolve(false);
         }));
 }
 
 const registerUserToEvent = async (req, res, next) => {
+    await assignEntityToReq(req, 'event', req.params.eventId);
+    await assignEntityToReq(req, 'user', req.params.userId);
     const didRegisterUserToEvent = await addUserIdToEvent(req.params.userId, req.params.eventId, req);
     let didAddEventToUser = false;
     if(didRegisterUserToEvent){
         didAddEventToUser = await addEventIdToUser(req.params.userId, req.params.eventId, req); 
     }
-    req.data = { didRegisterUserToEvent, didAddEventToUser };
+    if(req.didRegisterAsBackup && req.err && req.err.code === errCodes.EVENT_FULL){
+        req.err = null;
+    }
+    req.data = { didRegisterUserToEvent, didAddEventToUser, didRegisterAsBackup: req.didRegisterAsBackup };
     next();
 }
 
@@ -158,7 +185,7 @@ const unregisterUserFromEvent = async (req, res, next) => {
 
 const createEvent = (req, res, next) => {
     const newEvent = db.ref(`/events`).push();
-    newEvent.set({ ...req.body.event, id: newEvent.key}).then(() => {
+    newEvent.set({ ...req.body.event, id: newEvent.key }).then(() => {
         req.data = { success: true };
         next();
     }).catch(err => {
