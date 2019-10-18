@@ -31,4 +31,6 @@ Router.get('/event-register/:userId/:eventId', eventsWrap.registerUserToEvent, r
 
 Router.get('/event-unregister/:userId/:eventId', eventsWrap.unregisterUserFromEvent, resHandler);
 
+Router.get('/finish-event/:eventId', eventsWrap.finishEvent, resHandler);
+
 module.exports = Router;

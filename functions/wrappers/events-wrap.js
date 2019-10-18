@@ -184,7 +184,7 @@ const unregisterUserFromEvent = async (req, res, next) => {
 
 const createEvent = (req, res, next) => {
     const newEvent = db.ref(`/events`).push();
-    newEvent.set({ ...req.body.event, id: newEvent.key }).then(() => {
+    newEvent.set({ ...req.body.event, id: newEvent.key, isDone: false }).then(() => {
         req.data = { success: true };
         next();
     }).catch(err => {
@@ -218,9 +218,24 @@ const addEventToUserSavedEvents = async (req, res, next) => {
     } else {
         req.user.savedEvents[req.params.eventId] = req.params.eventId;
     }
-    const valueToUPdateRef = db.ref(`/users/${req.params.userId}/savedEvents`);
-    valueToUPdateRef.set(req.user.savedEvents).then(() => {
+    const valueToUpdateRef = db.ref(`/users/${req.params.userId}/savedEvents`);
+    valueToUpdateRef.set(req.user.savedEvents).then(() => {
         req.data = { isEventSaved: req.user.savedEvents[req.params.eventId] ? true : false };
+        next();
+    }).catch(err => {
+        req.err = err;
+        next();
+    });
+}
+
+const finishEvent = async (req, res, next) => {
+    await assignEntityToReq(req, 'event', req.params.eventId);
+    if(req.err){
+        return next();
+    }
+    const valueToUpdateRef = db.ref(`/events/${req.params.eventId}/isDone`);
+    valueToUpdateRef.set(true).then(() => {
+        req.data = { isDone: true };
         next();
     }).catch(err => {
         req.err = err;
@@ -233,6 +248,7 @@ module.exports = {
     createEvent,
     fetchEvent,
     fetchEvents,
+    finishEvent,
     fetchUserEvents,
     registerUserToEvent,
     unregisterUserFromEvent,
