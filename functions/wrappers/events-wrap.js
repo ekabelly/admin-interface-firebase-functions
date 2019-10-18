@@ -213,10 +213,14 @@ const addEventToUserSavedEvents = async (req, res, next) => {
     if(!req.user.savedEvents){
         req.user.savedEvents = {};
     }
-    req.user.savedEvents[req.params.eventId] = req.params.eventId;
+    if(req.user.savedEvents[req.params.eventId]){
+        delete req.user.savedEvents[req.params.eventId];
+    } else {
+        req.user.savedEvents[req.params.eventId] = req.params.eventId;
+    }
     const valueToUPdateRef = db.ref(`/users/${req.params.userId}/savedEvents`);
     valueToUPdateRef.set(req.user.savedEvents).then(() => {
-        req.data = { eventWasSaved: true };
+        req.data = { isEventSaved: req.user.savedEvents[req.params.eventId] ? true : false };
         next();
     }).catch(err => {
         req.err = err;
