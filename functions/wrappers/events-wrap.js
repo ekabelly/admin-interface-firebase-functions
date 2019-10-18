@@ -165,7 +165,6 @@ const removeEventIdFromUser = async (userId, eventId, req) => {
         }
         return false;
     }
-
 }
 
 const unregisterUserFromEvent = async (req, res, next) => {
@@ -205,7 +204,25 @@ const updateEvent = (req, res, next) => {
     });
 }
 
-
+const addEventToUserSavedEvents = async (req, res, next) => {
+    await assignEntityToReq(req, 'event', req.params.eventId);
+    await assignEntityToReq(req, 'user', req.params.userId);
+    if(req.err){
+        return next();
+    }
+    if(!req.user.savedEvents){
+        req.user.savedEvents = {};
+    }
+    req.user.savedEvents[req.params.eventId] = req.params.eventId;
+    const valueToUPdateRef = db.ref(`/users/${req.params.userId}/savedEvents`);
+    valueToUPdateRef.set(req.user.savedEvents).then(() => {
+        req.data = { eventWasSaved: true };
+        next();
+    }).catch(err => {
+        req.err = err;
+        next();
+    });
+}
 
 module.exports = {
     updateEvent,
@@ -214,5 +231,6 @@ module.exports = {
     fetchEvents,
     fetchUserEvents,
     registerUserToEvent,
-    unregisterUserFromEvent
+    unregisterUserFromEvent,
+    addEventToUserSavedEvents
 }

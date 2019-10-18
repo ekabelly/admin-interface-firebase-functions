@@ -25,6 +25,8 @@ Router.get('/user-past-events/:userId', (req, res, next)=> assignEventType(req, 
 Router.get('/saved-events/:userId', (req, res, next)=> assignEventType(req, next, 'savedEvents'), 
     eventsWrap.fetchUserEvents, resHandler);
 
+Router.get('/save-event/:userId/:eventId', eventsWrap.addEventToUserSavedEvents, resHandler);
+
 Router.get('/event-register/:userId/:eventId', eventsWrap.registerUserToEvent, resHandler);
 
 Router.get('/event-unregister/:userId/:eventId', eventsWrap.unregisterUserFromEvent, resHandler);
