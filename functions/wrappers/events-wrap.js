@@ -158,23 +158,24 @@ const unregisterUserFromEvent = async (req, res, next) => {
 
 const createEvent = (req, res, next) => {
     const newEvent = db.ref(`/events`).push();
-    newEvent.set({ ...req.body.event, id: newEvent.key}).then(() => {
+    req.body.event.id = newEvent.key;
+    newEvent.set(req.body.event).then(() => {
         req.data = { success: true };
-        next();
+        return next();
     }).catch(err => {
         req.err = err;
-        next();
+        return next();
     });
 }
 
 const updateEvent = (req, res, next) => {
     const eventToUpdate = db.ref(`/events/${req.params.eventId || req.body.updatedEvent.id}`);
-    eventToUpdate.set({ ...req.body.event }).then(() => {
+    eventToUpdate.set(req.body.event).then(() => {
         req.data = { success: true };
-        next();
+        return next();
     }).catch(err => {
         req.err = err;
-        next();
+        return next();
     });
 }
 
