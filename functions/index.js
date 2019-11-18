@@ -8,7 +8,9 @@ app.use(cors());
 
 // Function URL (api): https://us-central1-admin-interface-dev.cloudfunctions.net/api
 
-app.use('/login', require('./routes/users-route'));
+app.use('/login', require('./routes/login-route'));
+
+app.use('/users', require('./routes/users-route'));
 
 app.use('/events', require('./routes/events-route'));
 

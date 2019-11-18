@@ -2,7 +2,7 @@ const admin = require('firebase-admin');
 const usersWrap = require('../wrappers/users-wrap');
 
 const isUserEmailAdmin = async (req, userEmail) => {
-    const adminsEmailsArr = await usersWrap.fecthAdmins(req);
+    const adminsEmailsArr = await usersWrap.fetchAdmins(req);
     return adminsEmailsArr.includes(userEmail)
 }
 

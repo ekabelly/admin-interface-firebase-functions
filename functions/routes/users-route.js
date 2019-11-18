@@ -1,8 +1,7 @@
 const Router = require('express').Router();
-const { adminLogin, setCustomClaims } = require('../middlewares/auth');
+const usersWrap = require('../wrappers/users-wrap');
+const { resHandler } = require('../middlewares/app-middlewares');
 
-Router.post('/admin', adminLogin);
-
-Router.get('/set-custom-claims', setCustomClaims);
+Router.get('/', usersWrap.fetchUsersByIdArr, resHandler);
 
 module.exports = Router;
