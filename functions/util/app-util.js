@@ -23,6 +23,29 @@ const fetchSnapshot = async (req, dbRef) => {
     }
 }
 
+// const removeItemFromArrOrObj = (arrOrObj, key) => {
+//     if(arrOrObj.constructor === Object){
+//         delete arrOrObj[key];
+//     }
+//     if(arrOrObj.constructor === Array){
+//         arrOrObj.splice(1, key);
+//     }
+//     return arrOrObj;
+// }
+
+
+// const sanitizeNullData = data => {
+//     for (const key in data) {
+//         if(!data[key] && data[key] !== false){
+//             data = removeItemFromArrOrObj(data, key);
+//         } else if(data[key].constructor === Object ||  data[key].constructor === Array){
+//             data[key] = sanitizeNullData(data[key]);
+//         }
+//     }
+//     return data;
+// }
+
 module.exports = {
     fetchSnapshot
+    // sanitizeNullData
 }

@@ -11,8 +11,8 @@ const fetchAdmins = async req => {
 const fetchUsersByIdArr = async (req, res, next) => {
     const promisesArr = [];
     // console.log(eventsIdArr);
-    const eventsIdArr = req.body.eventsIdArr;
-    for (const userId of eventsIdArr) {
+    const usersKeys = req.body.usersKeys;
+    for (const userId of usersKeys) {
         let promise = fetchSnapshot(req, db.ref(`/users/${userId}`));
         promisesArr.push(promise);
     }

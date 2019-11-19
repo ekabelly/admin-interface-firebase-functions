@@ -1,4 +1,5 @@
 // const admin = require('firebase-admin');
+const util = require('../util/app-util');
 
 const errHandler = (req, res) => res.status(500).send({ success: false, err: req.err });
 
@@ -13,7 +14,13 @@ const assignEventType = (req, next, eventsType) => {
     next();
 }
 
+// const handleNullData = (req, res, next) => {
+//     req.data = util.sanitizeNullData(req.data);
+//     next();
+// }
+
 module.exports = {
     assignEventType,
     resHandler
+    // handleNullData
 }
