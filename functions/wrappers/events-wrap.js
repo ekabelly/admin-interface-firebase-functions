@@ -1,19 +1,7 @@
 const admin = require('firebase-admin');
 const errCodes = require('../config/error-codes');
-const { fetchSnapshot } = require('../util/app-util');
+const { fetchSnapshot, assignEntityToReq } = require('../util/app-util');
 const db = admin.database();
-
-const assignEntityToReq = async (req, entityName, id) => {
-    const entity = await fetchSnapshot(req, db.ref(`/${entityName}s/${id}`));
-    if(!entity){
-        req.err = {
-            code: errCodes.INVALID_PARAMS,
-            message: `${entityName} not found.`
-        };
-        return false;
-    }
-    req[entityName] = entity;
-}
 
 const fetchEventsByIdArr = async (req, eventsIdArr) => {
     const promisesArr = [];
@@ -130,9 +118,8 @@ const registerUserToEvent = async (req, res, next) => {
 const removeUserIdFromEvent = async (userId, eventId, req) => {
     const event = await fetchSnapshot(req, db.ref(`/events/${eventId}`));
     if(event.assignedVolunteers){
-        const index = event.assignedVolunteers.indexOf(userId);
-        if(index > -1){
-            event.assignedVolunteers.splice(index, 1);
+        if(!!event.assignedVolunteers[userId]){
+            delete event.assignedVolunteers[userId];
             return new Promise(resolve => db.ref(`/events/${eventId}/assignedVolunteers`)
                 .set(event.assignedVolunteers).then(()=> resolve(true)).catch( err => {
                     req.err = err;
@@ -150,9 +137,8 @@ const removeUserIdFromEvent = async (userId, eventId, req) => {
 const removeEventIdFromUser = async (userId, eventId, req) => {
     const user = await fetchSnapshot(req, db.ref(`/users/${userId}`));
     if(user.registeredEvents){
-        const index = user.registeredEvents.indexOf(eventId);
-        if(index > -1){
-            user.registeredEvents.splice(index, 1);
+        if(user.registeredEvents[eventId]){
+            delete user.registeredEvents[eventId];
             return new Promise(resolve => db.ref(`/users/${userId}/registeredEvents`)
                 .set(user.registeredEvents).then(()=> resolve(true)).catch( err => {
                     req.err = err;

@@ -16,4 +16,6 @@ app.use('/events', require('./routes/events-route'));
 
 app.use('/messages', require('./routes/messages-route'));
 
+app.use('/general-services', require('./routes/app-general-route'));
+
 exports.api = functions.https.onRequest(app);

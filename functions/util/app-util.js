@@ -23,6 +23,18 @@ const fetchSnapshot = async (req, dbRef) => {
     }
 }
 
+const assignEntityToReq = async (req, entityName, id) => {
+    const entity = await fetchSnapshot(req, db.ref(`/${entityName}s/${id}`));
+    if(!entity){
+        req.err = {
+            code: errCodes.INVALID_PARAMS,
+            message: `${entityName} not found.`
+        };
+        return false;
+    }
+    req[entityName] = entity;
+}
+
 // const removeItemFromArrOrObj = (arrOrObj, key) => {
 //     if(arrOrObj.constructor === Object){
 //         delete arrOrObj[key];
