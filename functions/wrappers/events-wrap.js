@@ -1,7 +1,19 @@
 const admin = require('firebase-admin');
 const errCodes = require('../config/error-codes');
-const { fetchSnapshot, assignEntityToReq } = require('../util/app-util');
+const { fetchSnapshot } = require('../util/app-util');
 const db = admin.database();
+
+const assignEntityToReq = async (req, entityName, id, dbRef) => {
+    const entity = await fetchSnapshot(req, db.ref(`/${entityName}s/${id}`));
+    if(!entity){
+        req.err = {
+            code: errCodes.INVALID_PARAMS,
+            message: `${entityName} not found.`
+        };
+        return false;
+    }
+    req[entityName] = entity;
+}
 
 const fetchEventsByIdArr = async (req, eventsIdArr) => {
     const promisesArr = [];
