@@ -2,7 +2,7 @@ const express = require('express');
 const Router = express.Router();
 const eventsWrap = require('../wrappers/events-wrap');
 const { resHandler, assignEventType } = require('../middlewares/app-middlewares');
-// const { verifyAdmin } = require('../middlewares/auth');
+const { verifyAdmin } = require('../middlewares/auth');
 
 // Router.all('*', verifyAdmin);
 
@@ -30,6 +30,12 @@ Router.get('/toggle-saved-event/:userId/:eventId', eventsWrap.addEventToUserSave
 Router.get('/event-register/:userId/:eventId', eventsWrap.registerUserToEvent, resHandler);
 
 Router.get('/event-unregister/:userId/:eventId', eventsWrap.unregisterUserFromEvent, resHandler);
+
+Router.get('/event-unregister-backup/:userId/:eventId', eventsWrap.unregisterUserFromEventBackup, resHandler);
+
+Router.get('/event-assign-from-backup/:userId/:eventId', eventsWrap.unregisterUserFromEventBackup, eventsWrap.registerUserToEvent, resHandler);
+
+Router.get('/event-reassign-to-backup/:userId/:eventId', eventsWrap.unregisterUserFromEvent, eventsWrap.assignUserToBackup, resHandler);
 
 Router.get('/finish-event/:eventId', eventsWrap.finishEvent, resHandler);
 
