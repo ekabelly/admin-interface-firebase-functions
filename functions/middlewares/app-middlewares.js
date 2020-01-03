@@ -14,12 +14,18 @@ const assignEventType = (req, next, eventsType) => {
     next();
 }
 
+// TODO: verify the params for each request
+const verifyParams = (req, res, next) => {
+    next();
+}
+
 // const handleNullData = (req, res, next) => {
 //     req.data = util.sanitizeNullData(req.data);
 //     next();
 // }
 
 module.exports = {
+    verifyParams,
     assignEventType,
     resHandler
     // handleNullData

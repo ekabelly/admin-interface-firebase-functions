@@ -1,6 +1,7 @@
 const admin = require('firebase-admin');
 const errCodes = require('../config/error-codes');
 const { fetchSnapshot } = require('../util/app-util');
+const { errHandler } = require('../middlewares/app-middlewares');
 const db = admin.database();
 
 const assignEntityToReq = async (req, entityName, id, dbRef) => {
@@ -15,10 +16,10 @@ const assignEntityToReq = async (req, entityName, id, dbRef) => {
     req[entityName] = entity;
 }
 
-const fetchEventsByIdArr = async (req, eventsIdArr) => {
+const fetchEventsByIdArr = async (req, eventsIdDictionary) => {
     const promisesArr = [];
     // console.log(eventsIdArr);
-    for (const eventId of eventsIdArr) {
+    for (const eventId of Object.values(eventsIdDictionary)) {
         let promise = fetchSnapshot(req, db.ref(`/events/${eventId}`));
         promisesArr.push(promise);
     }
@@ -201,26 +202,20 @@ const unregisterUserFromEventBackup = async (req, res, next) => {
 }
 
 const createEvent = (req, res, next) => {
-    const newEvent = db.ref(`/events`).push();
+    const newEvent = db.ref('/events').push();
     req.body.event.id = newEvent.key;
     newEvent.set(req.body.event).then(() => {
         req.data = { success: true };
         return next();
-    }).catch(err => {
-        req.err = err;
-        return next();
-    });
+    }).catch(errHandler);
 }
 
 const updateEvent = (req, res, next) => {
-    const eventToUpdate = db.ref(`/events/${req.params.eventId || req.body.updatedEvent.id}`);
+    const eventToUpdate = db.ref(`/events/${req.params.eventId}`);
     eventToUpdate.set(req.body.event).then(() => {
         req.data = { success: true };
         return next();
-    }).catch(err => {
-        req.err = err;
-        return next();
-    });
+    }).catch(errHandler);
 }
 
 const addEventToUserSavedEvents = async (req, res, next) => {
@@ -241,10 +236,7 @@ const addEventToUserSavedEvents = async (req, res, next) => {
     valueToUpdateRef.set(req.user.savedEvents).then(() => {
         req.data = { isEventSaved: req.user.savedEvents[req.params.eventId] ? true : false };
         next();
-    }).catch(err => {
-        req.err = err;
-        next();
-    });
+    }).catch(errHandler);
 }
 
 const finishEvent = async (req, res, next) => {
@@ -256,10 +248,7 @@ const finishEvent = async (req, res, next) => {
     valueToUpdateRef.set(true).then(() => {
         req.data = { isDone: true };
         next();
-    }).catch(err => {
-        req.err = err;
-        next();
-    });
+    }).catch(errHandler);
 }
 
 module.exports = {
