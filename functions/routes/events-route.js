@@ -4,17 +4,18 @@ const eventsWrap = require('../wrappers/events-wrap');
 const { resHandler, assignEventType } = require('../middlewares/app-middlewares');
 const { verifyAdmin } = require('../middlewares/auth');
 
-// Router.all('*', verifyAdmin);
-
 Router.get('/', eventsWrap.fetchEvents, resHandler);
 
 Router.get('paging/:first/:last', eventsWrap.fetchEvents, resHandler);
+
+Router.get('/event/:eventId', eventsWrap.fetchEvent, resHandler);
+
+Router.all('*', verifyAdmin);
 
 Router.post('/create', eventsWrap.createEvent, resHandler);
 
 Router.put('/update/:eventId', eventsWrap.updateEvent, resHandler);
 
-Router.get('/event/:eventId', eventsWrap.fetchEvent, resHandler);
 
 Router.get('/user-registered-events/:userId', (req, res, next)=> assignEventType(req, next, 'registeredEvents'), 
     eventsWrap.fetchUserEvents, resHandler);
