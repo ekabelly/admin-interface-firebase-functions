@@ -10,6 +10,9 @@ Router.get('paging/:first/:last', eventsWrap.fetchEvents, resHandler);
 
 Router.get('/event/:eventId', verifyParams, eventsWrap.fetchEvent, resHandler);
 
+Router.get('/user-backup-events/:userId', verifyParams, (req, res, next)=> assignEventType(req, next, 'backupEvents'), 
+    eventsWrap.fetchUserEvents, resHandler);
+    
 Router.get('/user-registered-events/:userId', verifyParams, (req, res, next)=> assignEventType(req, next, 'registeredEvents'), 
     eventsWrap.fetchUserEvents, resHandler);
 

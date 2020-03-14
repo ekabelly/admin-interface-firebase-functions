@@ -33,7 +33,7 @@ const fetchEvents = async (req, res, next) => {
 }
 
 const fetchUserEvents = async (req, res, next) => {
-    const eventsIdArr = await fetchSnapshot(req, db.ref(`/users/${req.params.userId}/${req.eventsType /* this is registeredEvents, pastEvents or savedEvents */}`));
+    const eventsIdArr = await fetchSnapshot(req, db.ref(`/users/${req.params.userId}/${req.eventsType /* this is registeredEvents, pastEvents, backupEvents or savedEvents */}`));
     if (!eventsIdArr || eventsIdArr.length < 1) {
         req.err = "this user has no events of type " + req.eventsType;
         return next();
