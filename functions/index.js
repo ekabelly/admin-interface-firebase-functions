@@ -3,6 +3,7 @@ const app = require('express')();
 const cors = require('cors');
 // The Cloud Functions for Firebase SDK to create Cloud Functions and setup triggers.
 const functions = require('firebase-functions');
+const { errHandler } = require('./middlewares/app-middlewares');
 
 app.use(cors());
 
@@ -17,5 +18,10 @@ app.use('/events', require('./routes/events-route'));
 app.use('/messages', require('./routes/messages-route'));
 
 app.use('/general-services', require('./routes/app-general-route'));
+
+app.use((err, req, res) => {
+    req.err = err;
+    return errHandler(req, res);
+});
 
 exports.api = functions.https.onRequest(app);
